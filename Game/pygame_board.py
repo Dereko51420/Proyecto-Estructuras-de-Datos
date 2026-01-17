@@ -1,5 +1,6 @@
 import pygame
 
+
 def run(board, player, cell_size=48):
     cols = board.cols
     rows = board.rows
