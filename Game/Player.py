@@ -51,6 +51,9 @@ class player:
             return (row, col + 1)
 
         return self.position
+    
+    def dead(self):
+        self.alive = False
 
     # ----- Guardado ----- #
     def Save(self):
