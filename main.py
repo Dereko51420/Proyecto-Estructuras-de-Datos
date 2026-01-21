@@ -36,5 +36,5 @@ def demo_pygame():
 	run(board, p, cell_size=56)
 
 if __name__ == "__main__":
-	# Run pygame demo by default (arcade disabled)
+	
 	demo_pygame()
