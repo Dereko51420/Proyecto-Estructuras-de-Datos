@@ -1,40 +1,52 @@
-import sys
-from Game.Player import player
-from Game.Tablero import Tablero
+from Game import Game
+from pygame_view import PygameView
 
-def demo_text():
-	matrix = [
-		"...#.",
-		"..#..",
-		".....",
-		"#....",
-		"...#.",
-	]
-	board = Tablero.from_matrix(matrix)
-	p = player("Hero", position=(0, 0))
+BIG_MAP = [
+    "####################",
+    "#P.....#.....K.....#",
+    "#.#####.#.#####.###.#",
+    "#.#.....#.....#...#.#",
+    "#.#.#########.#.#.#.#",
+    "#.#.....K.....#.#.#.#",
+    "#.###########.#.#.#.#",
+    "#.....A.......#.#...#",
+    "#####.#########.#.####",
+    "#.....#.......#.#...#",
+    "#.###.#.#####.#.#.#.#E",
+    "#.#...#.....#.#.#.#.#",
+    "#.#.#########.#.#.#.#",
+    "#.#.....K.....#.#.#.#",
+    "#.###########.#.#.#.#",
+    "#.....B.......#.#...#",
+    "#####.#########.#.####",
+    "#.....#.......#.#...#",
+    "#.###.#.#####.#.#.#C.#",
+    "####################"
+]
 
-	print("Initial board:")
-	print(board.render(player_pos=p.position))
+def main():
+    game = Game(BIG_MAP)
+    view = PygameView(game)
 
-	for direction in ["RIGHT", "RIGHT", "DOWN", "DOWN", "LEFT", "UP", "RIGHT"]:
-		ok = p.move(direction, board)
-		print(f"Move {direction}: {'OK' if ok else 'BLOCKED'} -> {p.position}")
-		print(board.render(player_pos=p.position))
-		print()
+    running = True
 
-def demo_pygame():
-	from Game.pygame_board import run
-	matrix = [
-		"...#.",
-		"..#..",
-		".....",
-		"#....",
-		"...#.",
-	]
-	board = Tablero.from_matrix(matrix)
-	p = player("Hero", position=(0, 0))
-	run(board, p, cell_size=56)
+    while running and not game.game_over:
+        direction = view.get_input()
+
+        if direction == "QUIT":
+            running = False
+            break
+
+        if direction:
+            game.update(direction)
+
+        view.draw()
+        view.tick()
+
+    if game.win:
+        print("GANASTE")
+    else:
+        print("PERDISTE")
 
 if __name__ == "__main__":
-	
-	demo_pygame()
+    main()

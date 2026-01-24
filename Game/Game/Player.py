@@ -1,8 +1,7 @@
-class player:
+class Player:
     def __init__(self, name, position=(0, 0)):
         self.name = name
-        self.health = 100
-        self.position = position
+        self.position = position  # (row, col)
         self.keys_collected = 0
         self.last_direction = None
         self.alive = True
@@ -10,33 +9,24 @@ class player:
     def move(self, direction, board):
         """
         Intenta mover al jugador en la dirección indicada.
-        board: objeto que valida paredes y límites.
-        Devuelve True si el movimiento fue exitoso, False en caso contrario.
+        board: objeto Tablero.
+        Devuelve True si el movimiento fue válido.
         """
         self.last_direction = direction
-
         new_pos = self._calculate_new_position(direction)
 
         if board.is_valid_cell(new_pos):
             self.position = new_pos
-            return True  # movimiento exitoso
+            return True
 
-        return False  # movimiento inválido
-
-    def take_damage(self, amount):
-        self.health -= amount
-        if self.health < 0:
-            self.health = 0
-        print(f"{self.name} took {amount} damage and now has {self.health} health")
-
-    def heal(self, amount):
-        self.health += amount
-        if self.health > 100:
-            self.health = 100
-        print(f"{self.name} healed {amount} and now has {self.health} health")
+        return False
 
     def collect_key(self):
         self.keys_collected += 1
+
+    def kill(self):
+        """El jugador muere (dragón lo alcanza)."""
+        self.alive = False
 
     def _calculate_new_position(self, direction):
         row, col = self.position
@@ -51,16 +41,18 @@ class player:
             return (row, col + 1)
 
         return self.position
-    
-    def dead(self):
-        self.alive = False
 
-    # ----- Guardado ----- #
-    def Save(self):
+    # ---------- Guardado ----------
+    def save_state(self):
         return {
             "position": self.position,
             "keys_collected": self.keys_collected,
             "last_direction": self.last_direction,
             "alive": self.alive
         }
-    
+
+    def load_state(self, data):
+        self.position = tuple(data["position"])
+        self.keys_collected = data["keys_collected"]
+        self.last_direction = data["last_direction"]
+        self.alive = data["alive"]
