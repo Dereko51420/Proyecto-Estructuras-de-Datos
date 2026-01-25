@@ -1,4 +1,4 @@
-from Game import Game
+from Game.Game import Game
 from pygame_view import PygameView
 
 BIG_MAP = [
