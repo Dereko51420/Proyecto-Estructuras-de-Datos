@@ -2,8 +2,6 @@ from .Player import Player
 from .Tablero import Tablero
 from .Dragon import DragonA, DragonB, DragonC
 
-
-
 class Game:
     def __init__(self, matrix):
         """
