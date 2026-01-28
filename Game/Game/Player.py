@@ -17,7 +17,7 @@ class Player:
 
         if board.is_valid_cell(new_pos):
             self.position = new_pos
-            return True
+            return True 
 
         return False
 
