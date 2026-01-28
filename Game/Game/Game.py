@@ -3,47 +3,43 @@ from .Tablero import Tablero
 from .Dragon import DragonA, DragonB, DragonC
 
 class Game:
-    def __init__(self, matrix):
-        """
-        Inicializa el juego a partir de una matriz de texto
-        """
-        self.board = Tablero.from_matrix(matrix)
+    def __init__(self, board, player, dragons):
+        
+        self.board = board
 
-        self.player = None
-        self.dragons = []
+        self.player = player
+        self.dragons = dragons
 
         self.game_over = False
         self.win = False
 
-        self._load_entities(matrix)
 
-    # ---------- Carga inicial ----------
+        # ---------- Carga inicial ----------
 
-    def _load_entities(self, matrix):
-        """
-        Busca en la matriz la posición inicial del jugador y dragones
-        """
-        for r in range(len(matrix)):
-            for c in range(len(matrix[0])):
-                cell = matrix[r][c]
+    """    def _load_entities(self, matrix):
+            
+            for r in range(len(matrix)):
+                for c in range(len(matrix[0])):
+                    cell = matrix[r][c]
 
-                if cell == 'P':
-                    self.player = Player("Hero", (r, c))
+                    if cell == 'P':
+                        self.player = Player("Hero", (r, c))
 
-                elif cell == 'A':
-                    self.dragons.append(DragonA("Dragon A", (r, c)))
+                    elif cell == 'A':
+                        self.dragons.append(DragonA("Dragon A", (r, c)))
 
-                elif cell == 'B':
-                    self.dragons.append(DragonB("Dragon B", (r, c)))
+                    elif cell == 'B':
+                        self.dragons.append(DragonB("Dragon B", (r, c)))
 
-                elif cell == 'C':
-                    self.dragons.append(DragonC("Dragon C", (r, c)))
+                    elif cell == 'C':
+                        self.dragons.append(DragonC("Dragon C", (r, c)))
 
-        if self.player is None:
-            raise ValueError("No se encontró jugador en el mapa")
+            if self.player is None:
+                raise ValueError("No se encontró jugador en el mapa")""" 
 
-    # ---------- Turno del juego ----------
-
+        # ---------- Turno del juego ----------
+    
+    
     def update(self, direction):
         """
         Ejecuta un turno del juego.

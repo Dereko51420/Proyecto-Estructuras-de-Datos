@@ -106,3 +106,7 @@ class Tablero:
     def load_state(self, data):
         self.keys = set(tuple(p) for p in data["keys"])
         self.exit_pos = tuple(data["exit_pos"]) if data["exit_pos"] else None
+
+    def set_exit(self, pos):
+        """Establece la posición de la salida."""
+        self.exit_pos = pos

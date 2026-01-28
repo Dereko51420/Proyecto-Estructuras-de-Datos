@@ -1,31 +1,19 @@
 from Game.Game import Game
 from pygame_view import PygameView
+from niveles import load_level
 
-BIG_MAP = [
-    "####################",
-    "#P...........K.....#",
-    "#.#####.#.#####.###.#",
-    "#.#.....#.....#...#.#",
-    "#.#.#########.#.#.#.#",
-    "#.#.....K.....#.#.#.#",
-    "#.###########.#.#.#.#",
-    "#.....A.......#.#...#",
-    "#####.#########.#.####",
-    "#.....#.......#.#...#",
-    "#.###.#.#####.#.#.#.#E",
-    "#.#...#.....#.#.#.#.#",
-    "#.#.#########.#.#.#.#",
-    "#.#.....K.....#.#.#.#",
-    "#.###########.#.#.#.#",
-    "#.....B.......#.#...#",
-    "#####.######.##.#.####",
-    "#.....#.........#...#",
-    "#.###.#.#####.#.#.#C.#",
-    "####################"
-]
 
 def main():
-    game = Game(BIG_MAP)
+    try:
+        # Cargar nivel desde JSON
+        game = load_level("levels/nivel_2.json")
+
+    except Exception as e:
+        print("Error cargando el nivel:")
+        print(e)
+        return
+
+    # Crear vista
     view = PygameView(game)
 
     running = True
@@ -44,9 +32,10 @@ def main():
         view.tick()
 
     if game.win:
-        print("GANASTE")
+        print("🎉 GANASTE")
     else:
-        print("PERDISTE")
+        print("💀 PERDISTE")
+
 
 if __name__ == "__main__":
     main()

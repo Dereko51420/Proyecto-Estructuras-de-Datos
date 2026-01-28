@@ -111,3 +111,14 @@ class DragonC(Dragon):
 
     def _manhattan_distance(self, a, b):
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+# ---------- Métodos de guardado para Dragon base ----------
+
+Dragon.save_state = lambda self: {
+    "name": self.name,
+    "position": self.position,
+    "type": self.__class__.__name__[-1]  # 'A', 'B', or 'C'
+}
+
+Dragon.load_state = lambda self, data: setattr(self, 'position', tuple(data["position"]))
