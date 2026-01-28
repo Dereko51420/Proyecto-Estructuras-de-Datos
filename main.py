@@ -1,19 +1,21 @@
 from Game.Game import Game
-from pygame_view import PygameView
-from niveles import load_level
+from pygame_view import PygameView, GameMenu
+from niveles import load_level, load_game, save_game
 
 
 def main():
-    try:
-        # Cargar nivel desde JSON
-        game = load_level("levels/nivel_2.json")
-
-    except Exception as e:
-        print("Error cargando el nivel:")
-        print(e)
+    
+    menu = GameMenu()
+    choice = menu.show()
+    
+    if choice == "QUIT":
         return
+    
+    if choice == "NEW_GAME":
+        game = load_level("levels/nivel_2.json")
+    else:  
+        game = load_game("saves/save_game.json")
 
-    # Crear vista
     view = PygameView(game)
 
     running = True
@@ -24,6 +26,10 @@ def main():
         if direction == "QUIT":
             running = False
             break
+
+        if direction == "SAVE":
+            save_game(game, "saves/save_game.json")
+            continue
 
         if direction:
             game.update(direction)

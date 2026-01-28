@@ -6,6 +6,35 @@ from Game.Game.Player import Player
 from Game.Game.Dragon import DragonA, DragonB, DragonC
 from Game.Game.Game import Game
 
+
+def save_game(game, json_path):
+    """
+    Guarda el estado actual del juego en un archivo JSON.
+    """
+    # Crear el directorio si no existe
+    path = Path(json_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    data = {
+        "board": {
+            "rows": game.board.rows,
+            "cols": game.board.cols,
+            "walls": [list(w) for w in game.board.walls],
+            "keys": [list(k) for k in game.board.keys],
+            "exit_pos": list(game.board.exit_pos) if game.board.exit_pos else None
+        },
+        "player": game.player.save_state(),
+        "dragons": [dragon.save_state() for dragon in game.dragons],
+        "game_over": game.game_over,
+        "win": game.win
+    }
+    
+    with open(json_path, 'w') as f:
+        json.dump(data, f, indent=4)
+    
+    print(f"Juego guardado en: {json_path}")
+
+
 def load_game(json_path):
     """
     Carga el estado del juego desde un archivo JSON.
@@ -112,4 +141,32 @@ def _validate_level_data(data):
         
     if len(data["keys"]) != 4:
         raise ValueError("Archivo de nivel inválido: debe haber exactamente 4 llaves")
+    
+
+def save_game(game,json_path):
+    """
+    Guarda el estado del juego en un archivo JSON.
+    """
+    # Crear el directorio si no existe
+    path = Path(json_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    data = {
+        'board': {
+            'rows': game.board.rows,
+            'cols': game.board.cols,
+            'walls': [list(wall) for wall in game.board.walls],
+            'keys': [list(key) for key in game.board.keys],
+            'exit_pos': list(game.board.exit_pos) if game.board.exit_pos else None
+        },
+        'player': game.player.save_state(),
+        'dragons': [dragon.save_state() for dragon in game.dragons],
+        'game_over': game.game_over,
+        'win': game.win
+    }
+
+    with open(json_path, 'w') as f:
+        json.dump(data, f, indent=4)
+    
+    print(f"Juego guardado en: {json_path}")
     

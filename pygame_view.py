@@ -1,4 +1,5 @@
 import pygame
+from pathlib import Path
 
 CELL_SIZE = 32
 
@@ -117,8 +118,97 @@ class PygameView:
                     direction = "LEFT"
                 elif event.key in (pygame.K_RIGHT, pygame.K_d):
                     direction = "RIGHT"
+                elif event.key == pygame.K_F5:
+                    return "SAVE"
 
         return direction
 
     def tick(self):
         self.clock.tick(10)
+
+
+class GameMenu:
+    """
+    Menú principal para elegir entre nuevo juego o cargar partida.
+    """
+    def __init__(self, width=400, height=300):
+        pygame.init()
+        self.width = width
+        self.height = height
+        self.screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Calabozo Místico - Menú")
+        self.clock = pygame.time.Clock()
+        
+        self.font_title = pygame.font.Font(None, 48)
+        self.font_option = pygame.font.Font(None, 36)
+        
+        self.selected = 0  # 0 = New Game, 1 = Load Save
+        self.save_exists = Path("saves/save_game.json").exists()
+    
+    def show(self):
+        """
+        Muestra el menú y retorna la opción elegida.
+        Returns: 'NEW_GAME', 'LOAD_SAVE', o 'QUIT'
+        """
+        while True:
+            choice = self._handle_input()
+            if choice:
+                pygame.quit()
+                return choice
+            
+            self._draw()
+            self.clock.tick(30)
+    
+    def _handle_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "QUIT"
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return "QUIT"
+                
+                elif event.key in (pygame.K_UP, pygame.K_w):
+                    self.selected = 0
+                
+                elif event.key in (pygame.K_DOWN, pygame.K_s):
+                    if self.save_exists:
+                        self.selected = 1
+                
+                elif event.key == pygame.K_RETURN:
+                    if self.selected == 0:
+                        return "NEW_GAME"
+                    elif self.selected == 1 and self.save_exists:
+                        return "LOAD_SAVE"
+        
+        return None
+    
+    def _draw(self):
+        self.screen.fill(COLORS["bg"])
+        
+        # Título
+        title = self.font_title.render("Calabozo Místico", True, COLORS["key"])
+        title_rect = title.get_rect(center=(self.width // 2, 60))
+        self.screen.blit(title, title_rect)
+        
+        # Opción 1: Nuevo Juego
+        color1 = COLORS["player"] if self.selected == 0 else COLORS["floor"]
+        opt1 = self.font_option.render("> Nuevo Juego", True, color1)
+        opt1_rect = opt1.get_rect(center=(self.width // 2, 140))
+        self.screen.blit(opt1, opt1_rect)
+        
+        # Opción 2: Cargar Partida
+        if self.save_exists:
+            color2 = COLORS["player"] if self.selected == 1 else COLORS["floor"]
+            opt2 = self.font_option.render("> Cargar Partida", True, color2)
+        else:
+            opt2 = self.font_option.render("  (Sin partida guardada)", True, COLORS["wall"])
+        opt2_rect = opt2.get_rect(center=(self.width // 2, 190))
+        self.screen.blit(opt2, opt2_rect)
+        
+        # Instrucciones
+        instr = self.font_option.render("↑↓ Seleccionar  |  Enter Confirmar", True, COLORS["wall"])
+        instr_rect = instr.get_rect(center=(self.width // 2, 260))
+        self.screen.blit(instr, instr_rect)
+        
+        pygame.display.flip()
