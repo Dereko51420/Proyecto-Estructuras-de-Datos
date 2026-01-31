@@ -6,67 +6,88 @@ import os
 CELL_SIZE = 48
 ASSETS = "assets"
 SAVE_FILE = "save.json"
-TOTAL_KEYS = 3  # Cambiar según tu mapa real
+REPLAY_FILE = "replay.json"
+TOTAL_KEYS = 4
+
+# ===== ESCALAS VISUALES =====
+PLAYER_SCALE = 1.8
+DRAGON_SCALE = 1.5
+KEY_SCALE = 1.2
+EXIT_SCALE = 1.2
+
 
 class PygameView:
     def __init__(self, game):
         pygame.init()
         self.game = game
-        self.board = game.board
-        self.width = self.board.cols * CELL_SIZE
-        self.height = self.board.rows * CELL_SIZE + 60  # espacio para HUD
+
+        self.width = self.game.board.cols * CELL_SIZE
+        self.height = self.game.board.rows * CELL_SIZE + 60
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Calabozo Místico")
         self.clock = pygame.time.Clock()
 
-        # ===== FUENTES =====
         self.font = pygame.font.SysFont("comicsansms", 28)
         self.font_big = pygame.font.SysFont("gabriola", 60)
 
-        # ===== ESTADO =====
-        self.state = "MENU"  # MENU o GAME
-
-        # ===== MENÚ =====
+        self.state = "MENU"
         self.menu_options = ["Nueva Partida", "Cargar Partida", "Salir"]
         self.selected_option = 0
+        # borrar replay viejo al iniciar programa
+        if os.path.exists(REPLAY_FILE):
+            os.remove(REPLAY_FILE)
 
-        # ===== IMÁGENES =====
+        self.has_replay = False
+
+        self.has_save = False
+
+
         self.load_images()
 
+    # ========================
+    # ===== IMÁGENES =========
+    # ========================
     def load_images(self):
-        self.floor = pygame.transform.scale(
-        pygame.image.load(f"{ASSETS}/floor.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
+        def load(name, scale):
+            size = int(CELL_SIZE * scale)
+            img = pygame.image.load(f"{ASSETS}/{name}").convert_alpha()
+            return pygame.transform.smoothscale(img, (size, size))
+
+        self.floor = pygame.transform.smoothscale(
+            pygame.image.load(f"{ASSETS}/floor.png").convert_alpha(),
+            (CELL_SIZE, CELL_SIZE)
         )
-        self.wall = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/wall.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.player_img = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/player.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.key_img = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/key.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.exit_img = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/exit.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.dragon_a = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/dragon_a.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.dragon_b = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/dragon_b.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
-        )
-        self.dragon_c = pygame.transform.scale(
-            pygame.image.load(f"{ASSETS}/dragon_c.png").convert_alpha(), (CELL_SIZE, CELL_SIZE)
+        self.wall = pygame.transform.smoothscale(
+            pygame.image.load(f"{ASSETS}/wall.png").convert_alpha(),
+            (CELL_SIZE, CELL_SIZE)
         )
 
-    # ===== MENÚ =====
+        self.player_img = load("player.png", PLAYER_SCALE)
+        self.key_img = load("key.png", KEY_SCALE)
+        self.exit_img = load("exit.png", EXIT_SCALE)
+
+        self.dragon_a = load("dragon_a.png", DRAGON_SCALE)
+        self.dragon_b = load("dragon_b.png", DRAGON_SCALE)
+        self.dragon_c = load("dragon_c.png", DRAGON_SCALE)
+
+        # ---- quitar fondo blanco (solo si el PNG lo necesita) ----
+        WHITE = (255, 255, 255)
+        self.player_img.set_colorkey(WHITE)
+        self.key_img.set_colorkey(WHITE)
+        self.exit_img.set_colorkey(WHITE)
+        self.dragon_a.set_colorkey(WHITE)
+        self.dragon_b.set_colorkey(WHITE)
+        self.dragon_c.set_colorkey(WHITE)
+
+    # ========================
+    # ===== MENÚ =============
+    # ========================
     def handle_menu(self):
         while self.state == "MENU":
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+                    pygame.quit(); exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DOWN:
                         self.selected_option = (self.selected_option + 1) % len(self.menu_options)
@@ -83,45 +104,70 @@ class PygameView:
 
     def draw_menu(self, mouse_pos):
         self.screen.fill((0,0,0))
-        title = self.font_big.render("Calabozo Místico", True, (255, 255, 255))
-        rect = title.get_rect(center=(self.width//2, 100))
-        self.screen.blit(title, rect)
+        title = self.font_big.render("Calabozo Místico", True, (255,255,255))
+        self.screen.blit(title, title.get_rect(center=(self.width//2, 100)))
 
-        for i, option in enumerate(self.menu_options):
+        options = self.menu_options.copy()
+        if self.has_replay:
+            options.insert(2, "Replay")
+
+        for i, option in enumerate(options):
             color = (255,0,0) if self.selected_option == i else (255,255,255)
-            text_surf = self.font.render(option, True, color)
-            text_rect = text_surf.get_rect(center=(self.width//2, 200 + i*60))
+            text = self.font.render(option, True, color)
+            rect = text.get_rect(center=(self.width//2, 200 + i*60))
 
-            # hover con mouse
-            if text_rect.collidepoint(mouse_pos):
+            if rect.collidepoint(mouse_pos):
                 self.selected_option = i
-                color = (255,0,0)
-                text_surf = self.font.render(option, True, color)
 
-            self.screen.blit(text_surf, text_rect)
+            self.screen.blit(text, rect)
 
         pygame.display.flip()
 
+
     def select_menu(self):
-        option = self.menu_options[self.selected_option]
-        if option == "Nueva Partida":
-            self.state = "GAME"
+        options = self.menu_options.copy()
+        if self.has_replay:
+            options.insert(2, "Replay")
+
+        opt = options[self.selected_option]
+
+        if opt == "Nueva Partida":
+            # borrar replay viejo
+            if os.path.exists(REPLAY_FILE):
+                os.remove(REPLAY_FILE)
+
+            self.has_replay = False
+            self.game.replay_moves = []
+
             self.game.reset()
-        elif option == "Cargar Partida":
+            self.state = "GAME"
+
+        elif opt == "Cargar Partida":
+            if not self.has_save:
+                self.show_message("No hay partida guardada")
+                return
             self.load_game()
             self.state = "GAME"
-        elif option == "Salir":
-            pygame.quit()
-            exit()
+
+        elif opt == "Replay":
+            self.play_replay()
+
+        else:
+            pygame.quit(); exit()
+
 
     def click_menu(self, pos):
         for i, option in enumerate(self.menu_options):
-            text_rect = self.font.render(option, True, (255,255,255)).get_rect(center=(self.width//2, 200 + i*60))
-            if text_rect.collidepoint(pos):
+            rect = self.font.render(option, True, (255,255,255)).get_rect(
+                center=(self.width//2, 200 + i*60)
+            )
+            if rect.collidepoint(pos):
                 self.selected_option = i
                 self.select_menu()
 
-    # ===== GUARDADO =====
+    # ========================
+    # ===== SAVE / LOAD ======
+    # ========================
     def save_game(self):
         data = {
             "player_pos": self.game.player.position,
@@ -132,34 +178,49 @@ class PygameView:
             json.dump(data, f)
 
     def load_game(self):
-        if os.path.exists(SAVE_FILE):
+        if not os.path.exists(SAVE_FILE):
+            self.show_message("No hay partidas guardadas")
+            return
+
+        try:
             with open(SAVE_FILE, "r") as f:
                 data = json.load(f)
+
+            # validar estructura mínima
+            if "player_pos" not in data or "keys" not in data or "player_lives" not in data:
+                self.show_message("Partida corrupta")
+                return
+
             self.game.reset()
             self.game.player.position = tuple(data["player_pos"])
             self.game.player.lives = data["player_lives"]
             self.game.board.keys = set(tuple(p) for p in data["keys"])
 
-    # ===== LOOP PRINCIPAL =====
+        except Exception:
+            self.show_message("Error al cargar partida")
+
+    # ========================
+    # ===== LOOP =============
+    # ========================
     def run(self):
         while True:
             if self.state == "MENU":
                 self.handle_menu()
-            elif self.state == "GAME":
-                self.handle_game_loop()
+            else:
+                self.game_loop()
 
-    def handle_game_loop(self):
+    def game_loop(self):
         while self.state == "GAME":
             direction = None
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+                    pygame.quit(); exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.save_game()
+                        self.has_save = True
                         self.state = "MENU"
-                    if event.key == pygame.K_UP:
+                    elif event.key == pygame.K_UP:
                         direction = "UP"
                     elif event.key == pygame.K_DOWN:
                         direction = "DOWN"
@@ -170,7 +231,7 @@ class PygameView:
 
             if direction:
                 self.game.update(direction)
-                # recoger llaves
+
                 if self.game.board.collect_key(self.game.player.position):
                     self.game.player.keys_collected += 1
 
@@ -178,60 +239,119 @@ class PygameView:
             self.clock.tick(10)
 
             # verificar fin de juego
-            if self.game.player.keys_collected >= TOTAL_KEYS and self.game.board.is_exit(self.game.player.position):
+            if self.game.player.keys_collected >= TOTAL_KEYS and \
+            self.game.board.is_exit(self.game.player.position):
+
+                # ===== GUARDAR REPLAY =====
+                with open(REPLAY_FILE, "w") as f:
+                    json.dump(self.game.replay_moves, f)
+
+                self.has_replay = True
                 self.show_message("GANASTE")
+
             elif self.game.player.lives <= 0:
                 self.show_message("GAME OVER")
 
-    # ===== DIBUJAR =====
+    # ========================
+    # ===== DIBUJAR ==========
+    # ========================
     def draw(self):
         self.screen.fill((0,0,0))
-        # tablero
-        for r in range(self.board.rows):
-            for c in range(self.board.cols):
+
+        for r in range(self.game.board.rows):
+            for c in range(self.game.board.cols):
                 pos = (r,c)
-                img = self.wall if self.board.is_wall(pos) else self.floor
-                self.screen.blit(img, (c*CELL_SIZE, r*CELL_SIZE+60))
-                if pos in self.board.keys:
-                    self.screen.blit(self.key_img, (c*CELL_SIZE, r*CELL_SIZE+60))
-                if pos == self.board.exit_pos:
-                    self.screen.blit(self.exit_img, (c*CELL_SIZE, r*CELL_SIZE+60))
+                base = self.wall if self.game.board.is_wall(pos) else self.floor
+                self.screen.blit(base, (c*CELL_SIZE, r*CELL_SIZE+60))
 
-        # player
-        pr, pc = self.game.player.position
-        self.screen.blit(self.player_img, (pc*CELL_SIZE, pr*CELL_SIZE+60))
+                if pos == self.game.board.exit_pos:
+                    self.blit_center(self.exit_img, c, r)
 
-        # dragones
+                if pos in self.game.board.keys:
+                    self.blit_center(self.key_img, c, r)
+
+        self.blit_center(self.player_img, *self.game.player.position[::-1])
+
         for d in self.game.dragons:
-            dr, dc = d.position
-            if "A" in d.name:
-                img = self.dragon_a
-            elif "B" in d.name:
-                img = self.dragon_b
-            else:
-                img = self.dragon_c
-            self.screen.blit(img, (dc*CELL_SIZE, dr*CELL_SIZE+60))
+            img = self.dragon_a if "A" in d.name else self.dragon_b if "B" in d.name else self.dragon_c
+            self.blit_center(img, d.position[1], d.position[0])
 
-        # HUD
-        hud_text = f"Vidas: {self.game.player.lives}  Llaves: {self.game.player.keys_collected}/{TOTAL_KEYS}  ESC = Guardar/Salir"
-        hud = self.font.render(hud_text, True, (255,255,0))
+        hud = self.font.render(
+            f"Vidas: {self.game.player.lives}  Llaves: {self.game.player.keys_collected}/{TOTAL_KEYS}  ESC = Guardar",
+            True, (255,255,0)
+        )
         self.screen.blit(hud, (10,10))
+
+        if self.game.board.is_exit(self.game.player.position):
+            if self.game.player.keys_collected < TOTAL_KEYS:
+
+                small = pygame.font.SysFont("arial", 20)
+
+                msg = small.render(
+                    f"Ocupas {TOTAL_KEYS} llaves",
+                    True,
+                    (255, 180, 0)
+                )
+
+                # HUD derecho
+                x = self.width - msg.get_width() - 15
+                y = 35
+
+                self.screen.blit(msg, (x, y))
+
 
         pygame.display.flip()
 
-    # ===== MENSAJE GANAR/PERDER =====
+    def blit_center(self, img, col, row):
+        x = col * CELL_SIZE + CELL_SIZE//2 - img.get_width()//2
+        y = row * CELL_SIZE + 60 + CELL_SIZE//2 - img.get_height()//2
+        self.screen.blit(img, (x,y))
+
+    # ========================
+    # ===== MENSAJES =========
+    # ========================
     def show_message(self, text):
-        start_time = pygame.time.get_ticks()
-        while pygame.time.get_ticks() - start_time < 2000:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+        start = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - start < 2000:
             self.screen.fill((0,0,0))
             msg = self.font_big.render(text, True, (255,0,0))
-            rect = msg.get_rect(center=(self.width//2, self.height//2))
-            self.screen.blit(msg, rect)
+            self.screen.blit(msg, msg.get_rect(center=(self.width//2, self.height//2)))
             pygame.display.flip()
             self.clock.tick(30)
-        # volver al menú
+            self.has_save = False
+            if os.path.exists(SAVE_FILE):
+                os.remove(SAVE_FILE)
+
         self.state = "MENU"
+
+    # ========================
+    # ======= REPLAY =========
+    # ========================
+
+    def play_replay(self):
+        if not os.path.exists(REPLAY_FILE):
+            return
+
+        with open(REPLAY_FILE, "r") as f:
+            moves = json.load(f)
+
+        self.game.reset()
+        self.state = "REPLAY"
+
+        for move in moves:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit(); exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.state = "MENU"
+                        return
+
+            self.game.update(move, record=False)
+            self.draw()
+            pygame.time.delay(250)
+
+        self.state = "MENU"
+
