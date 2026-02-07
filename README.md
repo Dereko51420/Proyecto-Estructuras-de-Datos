@@ -143,5 +143,3 @@ En cada turno, la dirección de movimiento se almacena en una lista ordenada.
 Aplicación: Game.py (self.replay_moves.append(direction)).
 
 Esta información es utilizada posteriormente por la capa de visualización para reproducir la partida paso a paso, manteniendo el orden original de los movimientos.
-
-# Bitácora de prompts
