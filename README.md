@@ -1,6 +1,10 @@
 # 🏰 Calabozo Místico
 
-+ Descripción del proyecto
++ 
++ 
++ Derek Espinach Murillo 118740813
+
+# Descripción del proyecto
 
 Calabozo Místico es un videojuego 2D desarrollado en Python utilizando un tablero tipo grid.
 El jugador debe escapar de un calabozo recolectando 4 llaves y abriendo la puerta de salida, mientras evita ser atrapado por tres dragones, cada uno con un comportamiento de persecución diferente.
