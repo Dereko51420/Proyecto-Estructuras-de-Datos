@@ -7,6 +7,7 @@ class Player:
         self.last_direction = None
         self.lives = 3
 
+    # mover al jugador si la celda es válida
     def move(self, direction, board):
         self.last_direction = direction
         r, c = self.position

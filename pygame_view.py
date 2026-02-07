@@ -21,18 +21,23 @@ class PygameView:
         pygame.init()
         self.game = game
 
+        # Ventana y reloj
         self.width = self.game.board.cols * CELL_SIZE
         self.height = self.game.board.rows * CELL_SIZE + 60
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Calabozo Místico")
         self.clock = pygame.time.Clock()
 
+
+        # Fuentes
         self.font = pygame.font.SysFont("comicsansms", 28)
         self.font_big = pygame.font.SysFont("gabriola", 60)
 
+        # Estado del juego
         self.state = "MENU"
         self.menu_options = ["Nueva Partida", "Cargar Partida", "Salir"]
         self.selected_option = 0
+        
         # borrar replay viejo al iniciar programa
         if os.path.exists(REPLAY_FILE):
             os.remove(REPLAY_FILE)

@@ -37,6 +37,7 @@ class Tablero:
 
         return cls(rows, cols, walls=walls, keys=keys, exit_pos=exit_pos)
 
+    # Crear tablero desde JSON
     @classmethod
     def from_json(cls, data):
         layout = data["layout"]

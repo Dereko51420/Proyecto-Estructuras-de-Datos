@@ -1,7 +1,7 @@
 import random
 from .pathfinding import bfs_next_step
 
-
+# Clase base de dragones
 class Dragon:
     def __init__(self, name, position):
         self.name = name
@@ -14,14 +14,14 @@ class Dragon:
     def move(self, board, player):
         raise NotImplementedError
 
-
+# Dragón A: persigue directamente al jugador
 class DragonA(Dragon):
     def move(self, board, player):
         step = bfs_next_step(self.position, player.position, board)
         if step:
             self.position = step
 
-
+# Dragón B: intenta interceptar al jugador
 class DragonB(Dragon):
     LOOKAHEAD = 3
 
@@ -46,7 +46,7 @@ class DragonB(Dragon):
         target = (r + dr * self.LOOKAHEAD, c + dc * self.LOOKAHEAD)
         return target if board.is_valid_cell(target) else player.position
 
-
+# Dragón C: estrategia mixta
 class DragonC(Dragon):
     DISTANCE_THRESHOLD = 5
 

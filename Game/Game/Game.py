@@ -6,9 +6,10 @@ from .Dragon import DragonA, DragonB, DragonC
 class Game:
     def __init__(self, map_file):
         self.map_file = map_file
-        self.replay_moves = []
+        self.replay_moves = []   # movimientos para replay
         self.reset()
 
+    # cargar mapa desde JSON
     def reset(self):
         with open(self.map_file) as f:
             data = json.load(f)
@@ -19,6 +20,7 @@ class Game:
         self.dragons = []
         self.player = None
 
+        # leer entidades del mapa
         for r in range(len(layout)):
             for c in range(len(layout[0])):
                 cell = layout[r][c]
@@ -41,6 +43,7 @@ class Game:
         self.turn = 0
         self.state = "PLAYING"
 
+    # actualizar un turno del juego
     def update(self, direction, record=True):
         if self.state != "PLAYING":
             return
@@ -52,9 +55,11 @@ class Game:
         if moved and self.board.collect_key(self.player.position):
             self.player.keys_collected += 1
 
+        # mover dragones
         for d in self.dragons:
             d.move(self.board, self.player)
 
+        # detectar colisiones
         for d in self.dragons:
             if d.position == self.player.position:
                 self.player.lives -= 1
@@ -64,6 +69,7 @@ class Game:
                 if self.player.lives <= 0:
                     self.state = "GAME_OVER"
 
+    # guardar estado actual
     def save_state(self):
         return {
             "player": self.player.position,
@@ -73,6 +79,7 @@ class Game:
             "turn": self.turn
         }
 
+    # cargar estado guardado
     def load_state(self, data):
         self.player.position = tuple(data["player"])
         self.player.lives = data["lives"]

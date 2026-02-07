@@ -1,5 +1,6 @@
 from collections import deque
 
+# BFS para obtener el primer paso hacia el objetivo
 def bfs_next_step(start, goal, board):
     """
     BFS sobre el tablero.

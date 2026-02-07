@@ -1,6 +1,6 @@
 import pygame
 
-
+ # Configuración básica del tablero
 def run(board, player, cell_size=48):
     cols = board.cols
     rows = board.rows
@@ -12,6 +12,7 @@ def run(board, player, cell_size=48):
     pygame.display.set_caption("Tablero - Pygame")
     clock = pygame.time.Clock()
 
+    # Colores usados en el render
     COLORS = {
         "bg": (20, 20, 20),
         "floor": (220, 220, 220),
@@ -20,6 +21,7 @@ def run(board, player, cell_size=48):
         "player": (30, 144, 255),
     }
 
+      # Render del tablero y jugador
     def draw():
         screen.fill(COLORS["bg"])
         # draw cells
@@ -47,6 +49,7 @@ def run(board, player, cell_size=48):
 
         pygame.display.flip()
 
+    # Mapeo de teclas a direcciones
     key_to_dir = {
         pygame.K_UP: "UP",
         pygame.K_DOWN: "DOWN",
@@ -58,6 +61,7 @@ def run(board, player, cell_size=48):
         pygame.K_d: "RIGHT",
     }
 
+    # Bucle principal
     running = True
     while running:
         for event in pygame.event.get():

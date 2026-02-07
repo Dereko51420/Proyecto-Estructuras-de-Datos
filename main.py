@@ -1,6 +1,7 @@
 from Game.Game import Game
 from pygame_view import PygameView
 
+# Inicialización del juego
 def main():
     game = Game("Niveles/mapa.json")
     view = PygameView(game)
