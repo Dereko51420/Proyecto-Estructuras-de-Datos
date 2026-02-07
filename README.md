@@ -13,14 +13,25 @@ Guardar y cargar partidas
 
 Sistema de repetición (replay) al finalizar el juego
 
-# Versión de Python
+# Ejecución del juego
+
++ Versión de Python
 
 El proyecto fue desarrollado y probado utilizando:
 
 Python 3.12
 
-Se recomienda utilizar esta versión para evitar incompatibilidades con las librería Pygame
++ Libreria
+  
+Se utilizola libreria Pygame que es compatible con la version de python
 
++ Instalacion
+
+pip install -r requirements.txt
+
++ Ejecutar juego
+
+ python main.py
 
 # Formato del mapa JSON
 
