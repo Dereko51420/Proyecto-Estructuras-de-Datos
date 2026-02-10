@@ -37,6 +37,33 @@ class Tablero:
 
         return cls(rows, cols, walls=walls, keys=keys, exit_pos=exit_pos)
 
+    @classmethod
+    def from_json(cls, data):
+        layout = data["layout"]
+
+        rows = len(layout)
+        cols = len(layout[0])
+
+        walls = set()
+        keys = set()
+        exit_pos = None
+
+        for r in range(rows):
+            for c in range(cols):
+                cell = layout[r][c]
+
+                if cell == "#":
+                    walls.add((r, c))
+
+                elif cell == "K":
+                    keys.add((r, c))
+
+                elif cell == "E":
+                    exit_pos = (r, c)
+
+        return cls(rows, cols, walls, keys, exit_pos)
+
+
     # --------- Validaciones ---------
 
     def in_bounds(self, pos):

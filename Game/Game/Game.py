@@ -1,100 +1,82 @@
+import json
 from .Player import Player
 from .Tablero import Tablero
 from .Dragon import DragonA, DragonB, DragonC
 
-
-
 class Game:
-    def __init__(self, matrix):
-        """
-        Inicializa el juego a partir de una matriz de texto
-        """
-        self.board = Tablero.from_matrix(matrix)
+    def __init__(self, map_file):
+        self.map_file = map_file
+        self.replay_moves = []
+        self.reset()
 
-        self.player = None
+    def reset(self):
+        with open(self.map_file) as f:
+            data = json.load(f)
+
+        self.board = Tablero.from_json(data)
+        layout = data["layout"]
+
         self.dragons = []
+        self.player = None
 
-        self.game_over = False
-        self.win = False
+        for r in range(len(layout)):
+            for c in range(len(layout[0])):
+                cell = layout[r][c]
 
-        self._load_entities(matrix)
-
-    # ---------- Carga inicial ----------
-
-    def _load_entities(self, matrix):
-        """
-        Busca en la matriz la posición inicial del jugador y dragones
-        """
-        for r in range(len(matrix)):
-            for c in range(len(matrix[0])):
-                cell = matrix[r][c]
-
-                if cell == 'P':
+                if cell == "P":
                     self.player = Player("Hero", (r, c))
 
-                elif cell == 'A':
-                    self.dragons.append(DragonA("Dragon A", (r, c)))
+                elif cell == "A":
+                    self.dragons.append(DragonA("A", (r, c)))
 
-                elif cell == 'B':
-                    self.dragons.append(DragonB("Dragon B", (r, c)))
+                elif cell == "B":
+                    self.dragons.append(DragonB("B", (r, c)))
 
-                elif cell == 'C':
-                    self.dragons.append(DragonC("Dragon C", (r, c)))
+                elif cell == "C":
+                    self.dragons.append(DragonC("C", (r, c)))
 
-        if self.player is None:
-            raise ValueError("No se encontró jugador en el mapa")
+        if not self.player:
+            raise Exception("No se encontró jugador")
 
-    # ---------- Turno del juego ----------
+        self.turn = 0
+        self.state = "PLAYING"
 
-    def update(self, direction):
-        """
-        Ejecuta un turno del juego.
-        direction: 'UP', 'DOWN', 'LEFT', 'RIGHT'
-        """
-        if self.game_over:
+    def update(self, direction, record=True):
+        if self.state != "PLAYING":
             return
 
+        if record:
+            self.replay_moves.append(direction)
+
         moved = self.player.move(direction, self.board)
+        if moved and self.board.collect_key(self.player.position):
+            self.player.keys_collected += 1
 
-        if moved:
-            self._check_key_collection()
-            self._check_exit()
+        for d in self.dragons:
+            d.move(self.board, self.player)
 
-        self._move_dragons()
-        self._check_dragon_collision()
+        for d in self.dragons:
+            if d.position == self.player.position:
+                self.player.lives -= 1
+                self.player.position = self.player.start_position
+                for dr in self.dragons:
+                    dr.reset()
+                if self.player.lives <= 0:
+                    self.state = "GAME_OVER"
 
-    # ---------- Reglas ----------
+    def save_state(self):
+        return {
+            "player": self.player.position,
+            "lives": self.player.lives,
+            "board": self.board.save_state(),
+            "dragons": [d.save_state() for d in self.dragons],
+            "turn": self.turn
+        }
 
-    def _check_key_collection(self):
-        if self.board.collect_key(self.player.position):
-            self.player.collect_key()
-            print(f"Llave recogida ({self.player.keys_collected})")
-
-    def _check_exit(self):
-        if self.board.is_exit(self.player.position):
-            if self.player.keys_collected >= 4:
-                self.win = True
-                self.game_over = True
-                print("¡Has escapado del calabozo!")
-            else:
-                print("Necesitas más llaves")
-
-    def _move_dragons(self):
-        for dragon in self.dragons:
-            dragon.move(self.board, self.player)
-
-    def _check_dragon_collision(self):
-        for dragon in self.dragons:
-            if dragon.position == self.player.position:
-                self.player.kill()
-                self.game_over = True
-                print("¡Un dragón te atrapó!")
-                return
-
-    # ---------- Debug ----------
-
-    def render_text(self):
-        """
-        Muestra el tablero en texto (debug)
-        """
-        print(self.board.render(player_pos=self.player.position))
+    def load_state(self, data):
+        self.player.position = tuple(data["player"])
+        self.player.lives = data["lives"]
+        self.board.load_state(data["board"])
+        for d, pos in zip(self.dragons, data["dragons"]):
+            d.load_state(pos)
+        self.turn = data["turn"]
