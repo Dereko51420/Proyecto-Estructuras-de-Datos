@@ -1,7 +1,7 @@
 # 🏰 Calabozo Místico
 
 + 
-+ 
++ Génesis Bermúdez Chávez 118590603
 + Derek Espinach Murillo 118740813
 
 # Descripción del proyecto
