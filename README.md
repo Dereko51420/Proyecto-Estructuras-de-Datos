@@ -1,6 +1,6 @@
 # 🏰 Calabozo Místico
 
-+ 
++ Carlos López Sánchez 402540290
 + Génesis Bermúdez Chávez 118590603
 + Derek Espinach Murillo 118740813
 
